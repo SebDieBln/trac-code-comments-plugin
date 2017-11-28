@@ -151,7 +151,12 @@ var underscore = _.noConflict();
 		},
 		showAddCommentDialog: function() {
 			row = new RowView( { el: $( this.el ).prev().get( 0 ) } );
-			AddCommentDialog.open( LineComments, this.line, row.getFile(), row.getDisplayLine() );
+			var displayLine = row.getLineNumberInFile();
+			var displayLineText = displayLine;
+			if (displayLine < 0) {
+				displayLineText = -displayLine + ' (deleted)';
+			}
+			AddCommentDialog.open( LineComments, this.line, row.getFile(), displayLineText);
 		}
 	});
 
@@ -237,13 +242,17 @@ var underscore = _.noConflict();
 			var callbackMouseover = function( event ) {
 				var row = new RowView( { el: this } ),
 					file = row.getFile(),
-					line = row.getLineNumber(),
-					displayLine = row.getDisplayLine();
+					line = row.getLineNumberInDiff(),
+					displayLine = row.getLineNumberInFile(),
+					displayLineText = displayLine;
+				if (displayLine < 0) {
+					displayLineText = -displayLine + ' (deleted)';
+				}
 				row.replaceLineNumberCellContent( '<a title="Comment on this line" href="#L' + line + '" class="bubble"><span class="ui-icon ui-icon-comment"></span></a>' );
 
 				$( 'a.bubble' ).click( function( e ) {
 					e.preventDefault();
-					AddCommentDialog.open( LineComments, line, file, displayLine );
+					AddCommentDialog.open( LineComments, line, file, displayLineText );
 				} );
 			};
 
@@ -301,11 +310,16 @@ var underscore = _.noConflict();
 		getFile: function() {
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
 		},
-		getLineNumber: function() {
+		getLineNumberInDiff: function() {
 			return Rows.getLineByTR( this.el );
 		},
-		getDisplayLine: function() {
-			return this.$lineNumberCell.text().trim() || this.$th.first().text() + ' (deleted)';
+		getLineNumberInFile: function() {
+			// Get the linenumber within the file of this row. If the row is deleted, return it negated.
+			var l = this.$lineNumberCell.text().trim();
+			if (l)
+				return l;
+			else
+				return -this.$th.first().text().trim();
 		}
 	} );
 
