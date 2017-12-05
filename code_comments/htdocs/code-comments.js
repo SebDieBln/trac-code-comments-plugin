@@ -114,7 +114,7 @@ var underscore = _.noConflict();
 			if (!this.viewPerLine[line]) {
 				this.viewPerLine[line] = new CommentsForALineView( { line: line } );
 
-				var $tr = $( Rows.getTrByLineNumber( line ) );
+				var $tr = $( Rows.getTrByLineNumberInDiff( line ) );
 				$tr.after(this.viewPerLine[line].render().el).addClass('with-comments');
 			}
 			this.viewPerLine[line].addOne(comment);
@@ -275,10 +275,10 @@ var underscore = _.noConflict();
 			// wrap TH content in spans so we can hide/show them
 			this.wrapTHsInSpans();
 		},
-		getLineByTR: function( tr ) {
+		getLineNumberInDiffByTr: function( tr ) {
 			return $.inArray( tr, this.$rows ) + 1;
 		},
-		getTrByLineNumber: function( line ) {
+		getTrByLineNumberInDiff: function( line ) {
 			return this.$rows[line - 1];
 		},
 		wrapTHsInSpans: function() {
@@ -311,7 +311,7 @@ var underscore = _.noConflict();
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
 		},
 		getLineNumberInDiff: function() {
-			return Rows.getLineByTR( this.el );
+			return Rows.getLineNumberInDiffByTr( this.el );
 		},
 		getLineNumberInFile: function() {
 			// Get the linenumber within the file of this row. If the row is deleted, return it negated.
