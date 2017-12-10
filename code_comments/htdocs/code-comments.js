@@ -278,12 +278,6 @@ var underscore = _.noConflict();
 			// wrap TH content in spans so we can hide/show them
 			this.wrapTHsInSpans();
 		},
-		getLineNumberInDiffByTr: function( tr ) {
-			return $.inArray( tr, this.$rows ) + 1;
-		},
-		getTrByLineNumberInDiff: function( line ) {
-			return this.$rows[line - 1];
-		},
 		getTrByFileAndLineNumberInFile: function ( file, line) {
 			var col;
 			var container;
@@ -340,9 +334,6 @@ var underscore = _.noConflict();
 		},
 		getFile: function() {
 			return this.$el.parents( 'li' ).find( 'h2>a:first' ).text();
-		},
-		getLineNumberInDiff: function() {
-			return Rows.getLineNumberInDiffByTr( this.el );
 		},
 		getLineNumberInFile: function() {
 			// Get the linenumber within the file of this row. If the row is deleted, return it negated.
