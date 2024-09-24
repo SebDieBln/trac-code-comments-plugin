@@ -296,11 +296,9 @@ class Subscription(object):
             args['rev'] = str(comment.revision)
 
         if comment.type == 'browser':
-            rm = RepositoryManager(env)
-            reponame, _, path = rm.get_repository_by_path(comment.path)
             args['type'] = ('browser', 'changeset')
-            args['path'] = (path, '')
-            args['repos'] = reponame
+            args['path'] = (comment.path, '')
+            args['repos'] = comment.reponame
             args['rev'] = (str(comment.revision), '')
 
         return cls.select(env, args, notify)
