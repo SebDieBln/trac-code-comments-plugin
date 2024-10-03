@@ -1,5 +1,48 @@
 var underscore = _.noConflict();
 
+function addSubscriptionButton() {
+	if (jQuery('h1').length == 0) {
+		return;
+	}
+
+	var rev = new URLSearchParams(window.location.search).get('rev') || '';
+
+	var button = jQuery(
+		'<button>',
+		{
+			id: 'subscribe',
+			disabled: true,
+			role: 'button',
+			title: 'Code comment subscriptions require JavaScript to be enabled',
+			class: 'ui-button ui-widget ui-state-default ui-corner-all ui-button-text-icon-primary',
+			'data-base-url': window.location.origin,
+			'data-path': window.location.pathname,
+			'data-rev': rev
+		}
+	);
+
+	button.append(
+		jQuery(
+			'<span>',
+			{
+				class: 'ui-button-icon-primary ui-icon ui-icon-closethick'
+			}
+		)
+	);
+
+	button.append(
+		jQuery(
+			'<span>',
+			{
+				text: 'Subscribe',
+				class: 'ui-button-text'
+			}
+		)
+	);
+
+	jQuery('h1').before(button);
+}
+
 (function($) { $(function() {
 	var _ = window.underscore,
 		jQuery = $;  // just in case something uses jQuery() instead of $()
@@ -372,6 +415,7 @@ var underscore = _.noConflict();
 	});
 
 	window.subscription = new Subscription();
+	addSubscriptionButton()
 	window.subscriptionView = new SubscriptionView({model: subscription});
 	if (subscriptionView.el) {
 		subscription.fetch();
