@@ -328,7 +328,7 @@ var underscore = _.noConflict();
 	});
 
 	window.SubscriptionView = Backbone.View.extend({
-		el: $('button#subscribe'),
+		el: 'button#subscribe',
 
 		initialize: function(){
 			_.bindAll(this, "render");
