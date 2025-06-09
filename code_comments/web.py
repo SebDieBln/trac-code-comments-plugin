@@ -251,7 +251,7 @@ class ListComments(CodeComments):
         displayed_sorting_methods = \
             ('id', 'author', 'time', 'reponame', 'path', 'text')
         displayed_sorting_method_names = \
-            ('ID', 'Author', 'Date', 'Repository', 'Path', 'Text')
+            ('ID', 'Author', 'Timestamp', 'Repository', 'Path', 'Text')
         query_args = self.req.args
         if 'page' in query_args:
             del query_args['page']
