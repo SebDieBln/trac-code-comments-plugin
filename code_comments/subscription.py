@@ -6,12 +6,9 @@ import re
 from trac.admin import IAdminCommandProvider
 from trac.attachment import Attachment, IAttachmentChangeListener
 from trac.core import Component, implements
-from trac.util.html import html as tag
 from trac.versioncontrol import (
     RepositoryManager, NoSuchChangeset, IRepositoryChangeListener)
-from trac.web.api import HTTPNotFound, IRequestHandler, ITemplateStreamFilter
-
-from genshi.filters import Transformer
+from trac.web.api import HTTPNotFound, IRequestHandler
 
 from code_comments.api import ICodeCommentChangeListener
 from code_comments.comments import Comments
@@ -236,13 +233,13 @@ class Subscription(object):
 
         # Munge changesets and browser
         if comment.type in ('changeset', 'browser'):
-            rm = RepositoryManager(env)
-            reponame, repos, path = rm.get_repository_by_path(comment.path)
             if comment.type == 'browser':
-                sub['path'] = path
+                sub['path'] = comment.path
             else:
                 sub['path'] = ''
-            sub['repos'] = reponame or '(default)'
+            sub['repos'] = comment.reponame
+            rm = RepositoryManager(env)
+            repos = rm.get_repository(comment.reponame)
             try:
                 _cs = repos.get_changeset(comment.revision)
             except NoSuchChangeset:
@@ -296,11 +293,9 @@ class Subscription(object):
             args['rev'] = str(comment.revision)
 
         if comment.type == 'browser':
-            rm = RepositoryManager(env)
-            reponame, _, path = rm.get_repository_by_path(comment.path)
             args['type'] = ('browser', 'changeset')
-            args['path'] = (path, '')
-            args['repos'] = reponame
+            args['path'] = (comment.path, '')
+            args['repos'] = comment.reponame
             args['rev'] = (str(comment.revision), '')
 
         return cls.select(env, args, notify)
@@ -439,7 +434,7 @@ class SubscriptionListeners(Component):
 
 
 class SubscriptionModule(Component):
-    implements(IRequestHandler, ITemplateStreamFilter)
+    implements(IRequestHandler)
 
     # IRequestHandler methods
 
@@ -458,17 +453,6 @@ class SubscriptionModule(Component):
         elif req.method == 'PUT':
             return self._do_PUT(req)
         return self._do_GET(req)
-
-    # ITemplateStreamFilter methods
-
-    def filter_stream(self, req, method, filename, stream, data):
-        if re.match(r'^/(changeset|browser|attachment/ticket/\d+/.?).*',
-                    req.path_info):
-            filter = Transformer('//h1')
-            button = self._subscription_button(req.path_info,
-                                               req.args.get('rev'))
-            stream |= filter.before(button)
-        return stream
 
     # Internal methods
 
@@ -496,15 +480,3 @@ class SubscriptionModule(Component):
             subscription.update()
         req.send(json.dumps(subscription, cls=SubscriptionJSONEncoder),
                  'application/json')
-
-    def _subscription_button(self, path, rev):
-        """
-        Generates a (disabled) button to connect JavaScript to.
-        """
-        return tag.button(
-            'Subscribe', id_='subscribe', disabled=True,
-            title=('Code comment subscriptions require JavaScript '
-                   'to be enabled'),
-            data_base_url=self.env.project_url or self.env.abs_href(),
-            data_path=path,
-            data_rev=rev)

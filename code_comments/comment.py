@@ -6,7 +6,7 @@ import locale
 import re
 
 import trac.wiki.formatter
-from trac.mimeview.api import Context
+from trac.web.chrome import web_context
 from trac.util.datefmt import format_datetime, user_time
 from code_comments import db
 from trac.util import Markup
@@ -71,10 +71,10 @@ class Comment(object):
 
     def href(self):
         if self.is_comment_to_file:
-            href = self.req.href.browser(self.path, rev=self.revision,
+            href = self.req.href.browser(self.reponame + '/' + self.path, rev=self.revision,
                                          codecomment=self.id)
         elif self.is_comment_to_changeset:
-            href = self.req.href.changeset(self.revision, codecomment=self.id)
+            href = self.req.href.changeset(self.revision + '/' + self.reponame, codecomment=self.id)
         elif self.is_comment_to_attachment:
             href = self.req.href('/attachment/ticket/%d/%s'
                                  % (self.attachment_ticket,
@@ -171,5 +171,5 @@ class CommentJSONEncoder(json.JSONEncoder):
 def format_to_html(req, env, text):
     req = Mock(href=Href('/'), abs_href=Href('http://www.example.com/'),
                authname='anonymous', perm=MockPerm(), args={})
-    context = Context.from_request(req)
+    context = web_context(req)
     return trac.wiki.formatter.format_to_html(env, context, text)
