@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from code_comments.comments import Comments
-from genshi.builder import tag
+from trac.util.html import tag
 from trac.wiki.macros import WikiMacroBase
 
 

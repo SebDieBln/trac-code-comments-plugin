@@ -351,3 +351,30 @@ class WikiPreview(CodeComments):
     def process_request(self, req):
         html = format_to_html(req, self.env, req.args.get('text', ''))
         req.send(html.encode('utf-8'))
+
+
+class HighlightCommentedRevisions(Component):
+    implements(IRequestFilter)
+
+    # IRequestFilter methods
+    def pre_process_request(self, req, handler):
+        return handler
+
+    def post_process_request(self, req, template, data, metadata):
+        if not re.match(r'^\/log\/\w+', req.path_info):
+            return template, data, metadata
+
+        query_params = {
+            'type': 'changeset',
+            'reponame': data['reponame'],
+        }
+        revisions_with_comments = []
+        for revision in data['changes']:
+            query_params['revision'] = revision
+            has_comments = bool(Comments(None, self.env).count(query_params))
+            if has_comments:
+                revisions_with_comments.append(revision)
+
+        add_script_data(req, {'CodeCommentsCommentedRevisions': revisions_with_comments})
+        add_script(req, 'code-comments/log-view-enhancer.js')
+        return template, data, metadata
